@@ -245,14 +245,14 @@ public class AstarAgent extends Agent {
         Unit.UnitView townhallUnit = state.getUnit(townhallID);
         Unit.UnitView footmanUnit = state.getUnit(footmanID);
 
-        MapLocation startLoc = new MapLocation(footmanUnit.getXPosition(), footmanUnit.getYPosition(), null, 0);
+        MapLocation startLoc = new MapLocation(footmanUnit.getXPosition(), footmanUnit.getYPosition());
 
-        MapLocation goalLoc = new MapLocation(townhallUnit.getXPosition(), townhallUnit.getYPosition(), null, 0);
+        MapLocation goalLoc = new MapLocation(townhallUnit.getXPosition(), townhallUnit.getYPosition());
 
         MapLocation footmanLoc = null;
         if(enemyFootmanID != -1) {
             Unit.UnitView enemyFootmanUnit = state.getUnit(enemyFootmanID);
-            footmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition(), null, 0);
+            footmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition());
         }
 
         // get resource location
@@ -262,7 +262,7 @@ public class AstarAgent extends Agent {
         {
             ResourceNode.ResourceView resource = state.getResourceNode(resourceID);
 
-            resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition(), null, 0));
+            resourceLocations.add(new MapLocation(resource.getXPosition(), resource.getYPosition()));
         }
 
         return AstarSearch(startLoc, goalLoc, state.getXExtent(), state.getYExtent(), footmanLoc, resourceLocations);
@@ -321,7 +321,12 @@ public class AstarAgent extends Agent {
     }
 
     private int chebyshev(MapLocation a, MapLocation b) {
-        return math.max(math.abs(a.x - b.x), math.abs(a.y - b.x));
+        return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.x));
+    }
+
+    private List<MapLocation> getValidNeighbors(MapLocation current, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations)
+    {
+        return new ArrayList<MapLocation>();
     }
 
     /**
