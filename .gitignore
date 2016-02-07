@@ -1,5 +1,7 @@
 .idea/
 
+/src/edu/cwru/sepia/AstarAgent$MapLocation.class
+/src/edu/cwru/sepia/AstarAgent.class
 /out/
 
 *.iws
