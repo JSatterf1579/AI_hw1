@@ -17,8 +17,19 @@ public class AstarAgent extends Agent {
     {
         public int x, y;
 
+        public MapLocation cameFrom;
+
+        public float cost;
+
         public MapLocation(int x, int y, MapLocation cameFrom, float cost)
         {
+            this.x = x;
+            this.y = y;
+            this.cameFrom = cameFrom;
+            this.cost = cost;
+        }
+
+        public MapLocation(int x, int y) {
             this.x = x;
             this.y = y;
         }
@@ -236,7 +247,7 @@ public class AstarAgent extends Agent {
             footmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition(), null, 0);
         }
 
-        // get resource locations
+        // get resource location
         List<Integer> resourceIDs = state.getAllResourceIds();
         Set<MapLocation> resourceLocations = new HashSet<MapLocation>();
         for(Integer resourceID : resourceIDs)
@@ -296,6 +307,7 @@ public class AstarAgent extends Agent {
     private Stack<MapLocation> AstarSearch(MapLocation start, MapLocation goal, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations)
     {
         // return an empty path
+
         return new Stack<MapLocation>();
     }
 
