@@ -33,6 +33,14 @@ public class AstarAgent extends Agent {
             this.x = x;
             this.y = y;
         }
+
+        public boolean equals(MapLocation other) {
+            if (this.x == other.x && this.y == other.y) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     Stack<MapLocation> path;
