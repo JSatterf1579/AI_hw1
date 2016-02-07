@@ -297,6 +297,11 @@ public class AstarAgent extends Agent {
     {
         // return an empty path
         return new Stack<MapLocation>();
+
+    }
+
+    private int chebyshev(MapLocation a, MapLocation b) {
+        return math.max(math.abs(a.x - b.x), math.abs(a.y - b.x));
     }
 
     /**
