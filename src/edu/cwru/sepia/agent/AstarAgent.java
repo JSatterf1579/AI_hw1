@@ -316,8 +316,7 @@ public class AstarAgent extends Agent {
         return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.x));
     }
 
-    private List<MapLocation> getValidNeighbors(MapLocation current, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations)
-    {
+    private List<MapLocation> getValidNeighbors(MapLocation current, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations) {
         return new ArrayList<MapLocation>();
     }
 
