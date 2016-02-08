@@ -13,7 +13,7 @@ import java.util.*;
 
 public class AstarAgent extends Agent {
 
-    class MapLocation
+    class MapLocation implements Comparable<MapLocation>
     {
         public int x, y;
 
@@ -21,12 +21,17 @@ public class AstarAgent extends Agent {
 
         public float cost;
 
-        public MapLocation(int x, int y, MapLocation cameFrom, float cost)
+        public float heuristic;
+
+
+
+        public MapLocation(int x, int y, MapLocation cameFrom, float cost, float heuristic)
         {
             this.x = x;
             this.y = y;
             this.cameFrom = cameFrom;
             this.cost = cost;
+            this.heuristic = heuristic;
         }
 
         public MapLocation(int x, int y) {
@@ -34,18 +39,24 @@ public class AstarAgent extends Agent {
             this.y = y;
         }
 
-        public boolean equals(MapLocation other) {
-            if (this.x == other.x && this.y == other.y) {
-                return true;
-            } else {
-                return false;
+        public boolean equals(Object other) {
+
+            if (other != null && other instanceof  MapLocation) {
+                MapLocation oMap = (MapLocation)other;
+                if (this.x == oMap.x && this.y == oMap.y) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
+            return  false;
         }
 
         public int compareTo(MapLocation other) {
-            if (this.cost == other.cost) {
+
+            if (this.cost + this.heuristic == other.cost + other.heuristic) {
                 return 0;
-            } else if (this.cost > other.cost) {
+            } else if (this.cost + this.heuristic > other.cost + other.heuristic) {
                 return 1;
             } else {
                 return -1;
@@ -328,15 +339,16 @@ public class AstarAgent extends Agent {
         MapLocation current = null;
         PriorityQueue<MapLocation> nextLoc = new PriorityQueue<MapLocation>();
         ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
-        nextLoc.add(start);
+
+        nextLoc.add(new MapLocation(start.x, start.y, null, 0.f, chebyshev(start, goal)));
 
         while (!done) {
             current = nextLoc.poll();
             closedList.add(current);
-            List<MapLocation> neighbors = getValidNeighbors(current, xExtent, yExtent, enemyFootmanLoc resourceLocations);
-            for (MapLocation:x in neighbors) {
+            List<MapLocation> neighbors = getValidNeighbors(current, xExtent, yExtent, enemyFootmanLoc, resourceLocations);
+            for (MapLocation x : neighbors) {
                 if (!nextLoc.contains(x) && !closedList.contains(x)) {
-                    nextLoc.add(x);
+                    nextLoc.add(new MapLocation(x.x, x.y, current, current.cost + 1, chebyshev(x, goal)));
                 }
             }
             if (current.compareTo(nextLoc.peek()) < 0) {
@@ -355,14 +367,25 @@ public class AstarAgent extends Agent {
 
     }
 
-    private int chebyshev(MapLocation a, MapLocation b) {
+    private float chebyshev(MapLocation a, MapLocation b) {
         return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.x));
     }
 
     private List<MapLocation> getValidNeighbors(MapLocation current, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations) {
         List<MapLocation> neighborList = new ArrayList<>();
 
-        return new ArrayList<MapLocation>();
+        for (int x = -1; x < 2; x++) {
+            for (int y = -1; y < 2; y++) {
+                if (current.x + x >= 0 && current.x + x < xExtent && current.y + y >= 0 && current.y + y < yExtent &&(x != 0 || y != 0)) {
+                    MapLocation test = new MapLocation(current.x + x, current.y + y);
+                    if (!(resourceLocations.contains(test) || test.equals(enemyFootmanLoc))) {
+                        neighborList.add(test);
+                    }
+                }
+            }
+        }
+
+        return neighborList;
     }
 
     /**
