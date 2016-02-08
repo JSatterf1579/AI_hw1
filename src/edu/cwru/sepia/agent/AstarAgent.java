@@ -351,7 +351,7 @@ public class AstarAgent extends Agent {
                     nextLoc.add(new MapLocation(x.x, x.y, current, current.cost + 1, chebyshev(x, goal)));
                 }
             }
-            if (current.compareTo(nextLoc.peek()) < 0) {
+            if (current.compareTo(nextLoc.peek()) < 0 && current.equals(goal)) {
                 done = true;
             }
 
