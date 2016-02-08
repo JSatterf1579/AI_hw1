@@ -339,7 +339,7 @@ public class AstarAgent extends Agent {
                     nextLoc.add(x);
                 }
             }
-            if (current.compareTo(nextLoc.peek()) < 0) {
+            if (current.compareTo(nextLoc.peek()) < 0 && current.equals(goal)) {
                 done = true;
             }
 
