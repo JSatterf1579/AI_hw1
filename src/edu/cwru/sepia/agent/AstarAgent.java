@@ -41,6 +41,16 @@ public class AstarAgent extends Agent {
                 return false;
             }
         }
+
+        public int compareTo(MapLocation other) {
+            if (this.cost == other.cost) {
+                return 0;
+            } else if (this.cost > other.cost) {
+                return 1;
+            } else {
+                return -1;
+            }
+        }
     }
 
     Stack<MapLocation> path;
@@ -314,9 +324,34 @@ public class AstarAgent extends Agent {
      */
     private Stack<MapLocation> AstarSearch(MapLocation start, MapLocation goal, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations)
     {
-        // return an empty path
+        boolean done = false;
+        MapLocation current = null;
+        PriorityQueue<MapLocation> nextLoc = new PriorityQueue<MapLocation>();
+        ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
+        nextLoc.add(start);
 
-        return new Stack<MapLocation>();
+        while (!done) {
+            current = nextLoc.poll();
+            closedList.add(current);
+            List<MapLocation> neighbors = getValidNeighbors(current, xExtent, yExtent, enemyFootmanLoc resourceLocations);
+            for (MapLocation:x in neighbors) {
+                if (!nextLoc.contains(x) && !closedList.contains(x)) {
+                    nextLoc.add(x);
+                }
+            }
+            if (current.compareTo(nextLoc.peek()) < 0) {
+                done = true;
+            }
+
+        }
+
+        Stack<MapLocation> returnPath = new Stack<MapLocation>();
+        while (current.cameFrom != null) {
+            returnPath.add(current);
+            current = current.cameFrom;
+        }
+        returnPath.add(current);
+        return returnPath;
 
     }
 
