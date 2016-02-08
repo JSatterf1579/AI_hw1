@@ -56,14 +56,8 @@ public class AstarAgent extends Agent {
         }
 
         public int compareTo(MapLocation other) {
-
-            if (this.cost + this.heuristic == other.cost + other.heuristic) {
-                return 0;
-            } else if (this.cost + this.heuristic > other.cost + other.heuristic) {
-                return -1;
-            } else {
-                return 1;
-            }
+            System.out.println("Used compared to");
+            return Float.compare(this.heuristic + this.cost, other.heuristic + other.cost);
         }
 
         public String toString() {
@@ -361,6 +355,8 @@ public class AstarAgent extends Agent {
             List<MapLocation> neighbors = getValidNeighbors(current, xExtent, yExtent, enemyFootmanLoc, resourceLocations);
             for (MapLocation neighbor : neighbors) {
                 neighbor.heuristic = chebyshev(neighbor, goal);
+                neighbor.cost = current.cost + 1;
+
                 if(closedList.contains(neighbor)) {
                     continue;
                 }
@@ -371,7 +367,7 @@ public class AstarAgent extends Agent {
                 }
 
                 neighbor.cameFrom = current;
-                neighbor.cost = current.cost + 1;
+
 
             }
             if (current.equals(goal)) {
