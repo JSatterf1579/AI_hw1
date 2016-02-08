@@ -326,7 +326,7 @@ public class AstarAgent extends Agent {
 
     private List<MapLocation> getValidNeighbors(MapLocation current, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations) {
         List<MapLocation> neighborList = new ArrayList<>();
-        
+
         return new ArrayList<MapLocation>();
     }
 
