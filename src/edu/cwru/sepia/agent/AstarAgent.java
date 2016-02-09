@@ -56,7 +56,6 @@ public class AstarAgent extends Agent {
         }
 
         public int compareTo(MapLocation other) {
-            System.out.println("Used compared to");
             return Float.compare(this.heuristic + this.cost, other.heuristic + other.cost);
         }
 
@@ -256,7 +255,20 @@ public class AstarAgent extends Agent {
      */
     private boolean shouldReplanPath(State.StateView state, History.HistoryView history, Stack<MapLocation> currentPath)
     {
-        return false;
+        MapLocation footmanLoc = null;
+        if(enemyFootmanID != -1) {
+            Unit.UnitView enemyFootmanUnit = state.getUnit(enemyFootmanID);
+            footmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition());
+            if (currentPath.contains(footmanLoc)) {
+                System.out.println("He's so wicked!");
+                return true;
+            }
+            System.out.println("No Footman is sight!");
+            return false;
+        } else {
+            System.out.println("No footman on map");
+            return false;
+        }
     }
 
     /**
@@ -342,15 +354,15 @@ public class AstarAgent extends Agent {
     {
         boolean done = false;
         MapLocation current = null;
-        PriorityQueue<MapLocation> nextLoc = new PriorityQueue<MapLocation>();
+        PriorityQueue<MapLocation> nextLocs = new PriorityQueue<MapLocation>();
         ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
         start.cost = 0;
         start.heuristic = chebyshev(start, goal);
 
-        nextLoc.add(start);
+        nextLocs.add(start);
 
         while (!done) {
-            current = nextLoc.poll();
+            current = nextLocs.poll();
             closedList.add(current);
             List<MapLocation> neighbors = getValidNeighbors(current, xExtent, yExtent, enemyFootmanLoc, resourceLocations);
             for (MapLocation neighbor : neighbors) {
@@ -360,8 +372,8 @@ public class AstarAgent extends Agent {
                 if(closedList.contains(neighbor)) {
                     continue;
                 }
-                if(!nextLoc.contains(neighbor)) {
-                    nextLoc.add(neighbor);
+                if(!nextLocs.contains(neighbor)) {
+                    nextLocs.add(neighbor);
                 } else if (current.cost + 1 >= neighbor.cost) {
                     continue;
                 }
@@ -397,7 +409,7 @@ public class AstarAgent extends Agent {
             for (int y = -1; y < 2; y++) {
                 if (current.x + x >= 0 && current.x + x < xExtent && current.y + y >= 0 && current.y + y < yExtent &&(x != 0 || y != 0)) {
                     MapLocation test = new MapLocation(current.x + x, current.y + y);
-                    if (!resourceLocations.contains(test)) {
+                    if (!resourceLocations.contains(test) && !test.equals(enemyFootmanLoc)) {
                         neighborList.add(test);
                     }
                 }
