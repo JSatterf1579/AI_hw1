@@ -13,6 +13,7 @@ import java.util.*;
 
 public class AstarAgent extends Agent {
 
+
     class MapLocation implements Comparable<MapLocation>
     {
         public int x, y;
@@ -255,11 +256,13 @@ public class AstarAgent extends Agent {
      */
     private boolean shouldReplanPath(State.StateView state, History.HistoryView history, Stack<MapLocation> currentPath)
     {
-        MapLocation footmanLoc = null;
-        if(enemyFootmanID != -1) {
+        MapLocation enemyFootmanLoc = null;
+        if(enemyFootmanID != -1 && footmanID != -1) {
             Unit.UnitView enemyFootmanUnit = state.getUnit(enemyFootmanID);
-            footmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition());
-            if (currentPath.contains(footmanLoc)) {
+            enemyFootmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition());
+            Unit.UnitView footmanUnit = state.getUnit(footmanID);
+            MapLocation footmanLoc = new MapLocation(footmanUnit.getXPosition(), footmanUnit.getYPosition());
+            if (currentPath.contains(enemyFootmanLoc) /**&& chebyshev(footmanLoc, enemyFootmanLoc) < 3**/) {
                 System.out.println("He's so wicked!");
                 return true;
             }
@@ -361,7 +364,16 @@ public class AstarAgent extends Agent {
 
         nextLocs.add(start);
 
-        while (!done) {
+        while (nextLocs.peek() != null) {
+            if(done) {
+                current = current.cameFrom;
+                Stack<MapLocation> returnPath = new Stack<MapLocation>();
+                while (current.cameFrom != null) {
+                    returnPath.add(current);
+                    current = current.cameFrom;
+                }
+                return returnPath;
+            }
             current = nextLocs.poll();
             closedList.add(current);
             List<MapLocation> neighbors = getValidNeighbors(current, xExtent, yExtent, enemyFootmanLoc, resourceLocations);
@@ -388,13 +400,7 @@ public class AstarAgent extends Agent {
 
         }
 
-        current = current.cameFrom;
-        Stack<MapLocation> returnPath = new Stack<MapLocation>();
-        while (current.cameFrom != null) {
-            returnPath.add(current);
-            current = current.cameFrom;
-        }
-        return returnPath;
+        return new Stack<>();
 
     }
 
