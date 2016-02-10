@@ -18,14 +18,21 @@ public class AstarAgent extends Agent {
     {
         public int x, y;
 
-        public MapLocation cameFrom;
+        public MapLocation cameFrom; // previous location on map from search
 
-        public float cost;
+        public float cost; // Cost of reaching this location on the map from the start node
 
-        public float heuristic;
+        public float heuristic; // the chebyshev distance from this node to the goal
 
 
-
+        /**
+        * Constructor used to initialize a MapLocation in search.
+        * @param x the column that the cell is in
+        * @param y the row the cell is in
+        * @param cameFrom the previous cell in the A* search
+        * @param cost the cost to reach this node in A* search
+        * @param heuristic the chebyshev distance from this cell to the goal
+        */
         public MapLocation(int x, int y, MapLocation cameFrom, float cost, float heuristic)
         {
             this.x = x;
@@ -35,6 +42,11 @@ public class AstarAgent extends Agent {
             this.heuristic = heuristic;
         }
 
+        /**
+        * Constructor used to initialize a MapLocation when all info is not known.
+        * @param x the column that the cell is in
+        * @param y the row the cell is in
+        */
         public MapLocation(int x, int y) {
             this.x = x;
             this.y = y;
@@ -43,6 +55,11 @@ public class AstarAgent extends Agent {
             this.cameFrom = null;
         }
 
+        /**
+        * Returns true if the given object is a MapLocation with the same coordinates.
+        * @param other The other cell in question
+        * @return
+        */
         public boolean equals(Object other) {
 
             if (other != null && other instanceof  MapLocation) {
@@ -56,14 +73,28 @@ public class AstarAgent extends Agent {
             return  false;
         }
 
+        /**
+        * Used in Priority queues to order MapLocations.  A MapLocation is "less" when 
+        * it has a lower total cost than another MapLocation
+        * @param other
+        * @return -1 if less, 0 if same, 1 if more
+        */
         public int compareTo(MapLocation other) {
             return Float.compare(this.heuristic + this.cost, other.heuristic + other.cost);
         }
 
+        /**
+        * Used for hashcoding
+        * @return the string version of the coordinates of the cell
+        */
         public String toString() {
             return "(" + x + "," + y + ")";
         }
 
+        /**
+        * Implemented to allow for ArrayList.contains to work
+        * @return the hash of the toString of this object. Equivalent cells will hash to the same value
+        */
         public int hashCode() {
             return this.toString().hashCode();
         }
@@ -257,20 +288,15 @@ public class AstarAgent extends Agent {
     private boolean shouldReplanPath(State.StateView state, History.HistoryView history, Stack<MapLocation> currentPath)
     {
         MapLocation enemyFootmanLoc = null;
-        if(enemyFootmanID != -1 && footmanID != -1) {
+        if(enemyFootmanID != -1) { // if the enemy exists, we find his location
             Unit.UnitView enemyFootmanUnit = state.getUnit(enemyFootmanID);
             enemyFootmanLoc = new MapLocation(enemyFootmanUnit.getXPosition(), enemyFootmanUnit.getYPosition());
-            Unit.UnitView footmanUnit = state.getUnit(footmanID);
-            MapLocation footmanLoc = new MapLocation(footmanUnit.getXPosition(), footmanUnit.getYPosition());
-            if (currentPath.contains(enemyFootmanLoc) /**&& chebyshev(footmanLoc, enemyFootmanLoc) < 3**/) {
-                System.out.println("He's so wicked!");
+            if (currentPath.contains(enemyFootmanLoc)) { // we worry about the footman if he is on our path
                 return true;
             }
-            System.out.println("No Footman is sight!");
-            return false;
+            return false; // else we don't
         } else {
-            System.out.println("No footman on map");
-            return false;
+            return false; // if the footman doesn't exist, we don't care
         }
     }
 
@@ -356,66 +382,89 @@ public class AstarAgent extends Agent {
     private Stack<MapLocation> AstarSearch(MapLocation start, MapLocation goal, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations)
     {
         boolean done = false;
-        MapLocation current = null;
-        PriorityQueue<MapLocation> nextLocs = new PriorityQueue<MapLocation>();
-        ArrayList<MapLocation> closedList = new ArrayList<MapLocation>();
+        MapLocation current = null; // current expanding node in search
+        PriorityQueue<MapLocation> nextLocs = new PriorityQueue<MapLocation>(); // open list of nodes to check, ordered by least cost
+        ArrayList<MapLocation> closedList = new ArrayList<MapLocation>(); // closed list of expanded nodes
+        
+        //initialize start location statistics
         start.cost = 0;
         start.heuristic = chebyshev(start, goal);
-
+        // start is our first node
         nextLocs.add(start);
 
-        while (nextLocs.peek() != null) {
-            if(done) {
-                current = current.cameFrom;
-                Stack<MapLocation> returnPath = new Stack<MapLocation>();
-                while (current.cameFrom != null) {
+        while (nextLocs.peek() != null) { //keep going while we have nodes to expand
+            if(done) { // if we're done we can backtrack from the current(goal) node and return the path
+                current = current.cameFrom; // ignore the goal, since we just want to get next to it
+                Stack<MapLocation> returnPath = new Stack<MapLocation>(); 
+                while (current.cameFrom != null) { // add all nodes except the start node
                     returnPath.add(current);
                     current = current.cameFrom;
                 }
                 return returnPath;
             }
+
+            // otherwise, we want to expand the lowest cost element in the queue
             current = nextLocs.poll();
-            closedList.add(current);
+            closedList.add(current); // we won't be expanding this node anymore after this iteration
             List<MapLocation> neighbors = getValidNeighbors(current, xExtent, yExtent, enemyFootmanLoc, resourceLocations);
             for (MapLocation neighbor : neighbors) {
+                //assign costs to the valid neighbor
                 neighbor.heuristic = chebyshev(neighbor, goal);
                 neighbor.cost = current.cost + 1;
 
+                // ignore neighbors we've expanded before
                 if(closedList.contains(neighbor)) {
                     continue;
                 }
-                if(!nextLocs.contains(neighbor)) {
+                if(!nextLocs.contains(neighbor)) { // add neighbor if it's not in the open list
                     nextLocs.add(neighbor);
-                } else if (current.cost + 1 >= neighbor.cost) {
+                } else if (current.cost + 1 >= neighbor.cost) { // ignore neighbor that is in the open list and we haven't found a shorter path to
                     continue;
                 }
-
+                // set the previous pointer
                 neighbor.cameFrom = current;
 
 
             }
-            if (current.equals(goal)) {
+            if (current.equals(goal)) { // check for end condition
                 done = true;
             }
 
         }
-
+        // This cna only be reached if we've found no path, so we just exit.
+        System.out.println("No available path");
+        System.exit(0);
         return new Stack<>();
 
     }
 
+    /**
+    * Calculates the chebyshev distance between two points
+    * @param a node 1
+    * @param b node 2
+    * @return
+    */
     private float chebyshev(MapLocation a, MapLocation b) {
         return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
     }
 
+    /**
+    * Returns all MapLocations adjacent to the given location that are on the map and are not under a resource or unit.
+    * @param current the current node
+    * @param xExtent the width of the map
+    * @param yExtent the height of the map
+    * @param enemyFootmanLoc the location of the enemy footman
+    * @param resourceLocations location of all resources on map
+    * @return a list of MapLocations of empty neighbor nodes
+    */
     private List<MapLocation> getValidNeighbors(MapLocation current, int xExtent, int yExtent, MapLocation enemyFootmanLoc, Set<MapLocation> resourceLocations) {
         List<MapLocation> neighborList = new ArrayList<>();
 
         for (int x = -1; x < 2; x++) {
-            for (int y = -1; y < 2; y++) {
-                if (current.x + x >= 0 && current.x + x < xExtent && current.y + y >= 0 && current.y + y < yExtent &&(x != 0 || y != 0)) {
+            for (int y = -1; y < 2; y++) { // iterate over all nodes around current
+                if (current.x + x >= 0 && current.x + x < xExtent && current.y + y >= 0 && current.y + y < yExtent &&(x != 0 || y != 0)) { // check if it's on the map
                     MapLocation test = new MapLocation(current.x + x, current.y + y);
-                    if (!resourceLocations.contains(test) && !test.equals(enemyFootmanLoc)) {
+                    if (!resourceLocations.contains(test) && !test.equals(enemyFootmanLoc)) { // check if the location is occupied
                         neighborList.add(test);
                     }
                 }
